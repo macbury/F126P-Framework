@@ -85,7 +85,7 @@ Router.prototype.refresh = function () {
     $.each(query.split("&"), function() {
       var k = this.split("=")[0];
       var v = this.split("=")[1];
-      params[k] = unescape(v);
+      params[k] = unescape(v.replace(/\+/g, " "));
     });
   }
   
@@ -100,7 +100,7 @@ Router.prototype.refresh = function () {
         for (var i=0; i < keys.length; i++) {
           var value = values[i+1];
           var key = keys[i].replace(":", "");
-          params[key] = value;
+          params[key] = unescape(value.replace(/\+/g, " "));
         };
       }
       

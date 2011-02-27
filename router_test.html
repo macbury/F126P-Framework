@@ -4,13 +4,18 @@
     <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
     <title>router_test</title>
     <script type="text/javascript" charset="utf-8" src="jquery-1.5.1.js"></script>
+    <script type="text/javascript" charset="utf-8" src="haml.js"></script>
+    <script type="text/javascript" charset="utf-8" src="template.js"></script>
     <script type="text/javascript" charset="utf-8" src="router.js"></script>
     
     <script type="text/javascript" charset="utf-8">
       var router = new Router();
-      
+      Template.views_path = "views"
       router.root(function () {
         console.log("root!");
+        render("test.haml", { msg: "hello world" }, function (content) {
+          $('body').append(content);
+        })
       });
       
       router.match("#!/photo/:id", {

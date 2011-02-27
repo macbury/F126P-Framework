@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <title>router_test</title>
+    <script type="text/javascript" charset="utf-8" src="jquery-1.5.1.js"></script>
+    <script type="text/javascript" charset="utf-8" src="router.js"></script>
+    
+    <script type="text/javascript" charset="utf-8">
+      var router = new Router();
+      
+      router.root(function () {
+        console.log("root!");
+      });
+      
+      router.match("#!/photo/:id", {
+        as: "photo",
+        callback: function () {
+          console.log("photo!");
+          console.log(params);
+        }
+      });
+      
+      router.match("#!/photo/:id/events", {
+        as: "event",
+        callback: function () {
+          console.log("event!");
+          console.log(params);
+        }
+      });
+      router.run();
+    </script>
+  </head>
+  
+  <body id="router_test" onload="">
+    <ul>
+      <li><a href="#!/">Root</a></li>
+      <li><a href="#!/photo/22">Photo</a></li>
+      <li><a href="#!/photo/22/events">Photo Events</a></li>
+      <li><a href="#!/photo/22?test=value">Photo with params</a></li>
+    </ul>
+  </body>
+</html>

@@ -2,9 +2,11 @@
  * @author Arkadiusz Buras
  */
 var params = {};
+window.routes = {};
 
 function Router () {
   this._timer = null;
+  window.redirect_to = this.redirect_to;
 }
 
 $.extend(Router.prototype, {
@@ -43,6 +45,7 @@ Router.prototype.match = function (path, options) {
   var self = this;
   
   if (options['as']) {
+    window.routes[options['as']+"_path"] = path;
     window[options['as']+"_path"] = function (p) {
       var url = path;
       var url_vals = url.match(self.PATH_NAME_MATCHER);
@@ -128,3 +131,13 @@ Router.prototype.update = function () {
     this.refresh();
   };
 }
+
+new Task({
+  name: "routes",
+  description: "Display all routes defined in app",
+  method: function() {
+    $.each(window.routes, function(route, path){
+      console.log(route + " => " + path);
+    });
+  }
+});

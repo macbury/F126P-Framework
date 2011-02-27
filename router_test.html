@@ -4,6 +4,7 @@
     <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
     <title>router_test</title>
     <script type="text/javascript" charset="utf-8" src="jquery-1.5.1.js"></script>
+    <script type="text/javascript" charset="utf-8" src="jquery.cookie.js"></script>
     <script type="text/javascript" charset="utf-8" src="haml.js"></script>
     <script type="text/javascript" charset="utf-8" src="template.js"></script>
     <script type="text/javascript" charset="utf-8" src="jake.js"></script>
@@ -20,7 +21,7 @@
         })
       });
       
-      router.match("#!/photo/:id", {
+      router.match("/photo/:id", {
         as: "photo",
         callback: function () {
           console.log("photo!");
@@ -28,7 +29,7 @@
         }
       });
       
-      router.match("#!/photo/:photo_id/events", {
+      router.match("/photo/:photo_id/events", {
         as: "events",
         callback: function () {
           console.log("events!");
@@ -36,18 +37,10 @@
         }
       });
       
-      router.match("#!/photo/:photo_id/events/:id", {
+      router.match("/photo/:photo_id/events/:id", {
         as: "event",
         callback: function () {
           console.log("event!");
-          console.log(params);
-        }
-      });
-      
-      router.match("#!/:controller", {
-        as: "controller",
-        callback: function () {
-          console.log("controller!");
           console.log(params);
         }
       });

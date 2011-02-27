@@ -6,6 +6,7 @@ window.routes = {};
 
 function Router () {
   this._timer = null;
+  this.html5 = (typeof(history.pushState) == "function");
   window.redirect_to = this.redirect_to;
 }
 
@@ -13,6 +14,8 @@ $.extend(Router.prototype, {
   _timer: null,
   last_url: null,
   routes: {},
+  html5: false,
+  prefix: "#!",
   PATH_REPLACER: /([^\/]+)/,
   PATH_NAME_MATCHER: /:([\w\d]+)/g,
   QUERY_STRING_MATCHER: /\?([^#]*)$/,
@@ -23,14 +26,14 @@ Router.prototype.run = function () {
   if (self._timer) {
     clearInterval(self._timer);
     self._timer = null;
-  };
+  }
   this._timer = setInterval(function () {
     self.update();
   }, 100);
 }
 
 Router.prototype.root = function (callback) {
-  this.match("#!/", {
+  this.match("/", {
     as: "root",
     callback: callback
   });
@@ -47,7 +50,7 @@ Router.prototype.match = function (path, options) {
   if (options['as']) {
     window.routes[options['as']+"_path"] = path;
     window[options['as']+"_path"] = function (p) {
-      var url = path;
+      var url = self.prefix + path;
       var url_vals = url.match(self.PATH_NAME_MATCHER);
       
       if (url_vals) {
@@ -62,7 +65,6 @@ Router.prototype.match = function (path, options) {
         if (ap.length > 0) {
           url = [url, ap].join("?");
         }
-        
       }
       
       return url;
@@ -78,7 +80,7 @@ Router.prototype.redirect_to = function (url) {
 
 Router.prototype.refresh = function () {
   var self = this;
-  var url = window.location.hash;
+  var url = this.last_url.replace(this.prefix, "");
   var query = url.match(self.QUERY_STRING_MATCHER);
   params = {};
   
@@ -121,7 +123,7 @@ Router.prototype.refresh = function () {
 }
 
 Router.prototype.onError404 = function () {
-  this.redirect_to(root_path());
+  redirect_to(root_path());
 }
 
 Router.prototype.update = function () {

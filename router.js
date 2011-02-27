@@ -11,7 +11,6 @@ $.extend(Router.prototype, {
   _timer: null,
   last_url: null,
   routes: {},
-  route_caches: [],
   PATH_REPLACER: /([^\/]+)/,
   PATH_NAME_MATCHER: /:([\w\d]+)/g,
   QUERY_STRING_MATCHER: /\?([^#]*)$/,
@@ -19,7 +18,10 @@ $.extend(Router.prototype, {
 
 Router.prototype.run = function () {
   var self = this;
-  
+  if (self._timer) {
+    clearInterval(self._timer);
+    self._timer = null;
+  };
   this._timer = setInterval(function () {
     self.update();
   }, 100);
@@ -75,13 +77,12 @@ Router.prototype.refresh = function () {
   var self = this;
   var url = window.location.hash;
   var query = url.match(self.QUERY_STRING_MATCHER);
+  params = {};
   
   if (query) {
     url = url.replace(self.QUERY_STRING_MATCHER, "");
     query = query[1];
-    
-    params = {};
-    
+
     $.each(query.split("&"), function() {
       var k = this.split("=")[0];
       var v = this.split("=")[1];
@@ -112,11 +113,11 @@ Router.prototype.refresh = function () {
   if (callback) {
     callback();
   } else {
-    self.run404();
+    self.onError404();
   }
 }
 
-Router.prototype.run404 = function () {
+Router.prototype.onError404 = function () {
   this.redirect_to(root_path());
 }
 

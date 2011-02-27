@@ -19,6 +19,7 @@ Template = {
           callback(Haml.render(html, locals));
         },
         error: function(){
+          delete Template.cache[view];
           callback("Could not load "+ [Template.views_path, view].join("/"));
         },
       });

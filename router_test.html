@@ -10,7 +10,8 @@
     
     <script type="text/javascript" charset="utf-8">
       var router = new Router();
-      Template.views_path = "views"
+      Template.views_path = "views";
+      
       router.root(function () {
         console.log("root!");
         render("test.haml", { msg: "hello world" }, function (content) {
@@ -26,13 +27,30 @@
         }
       });
       
-      router.match("#!/photo/:id/events", {
+      router.match("#!/photo/:photo_id/events", {
+        as: "events",
+        callback: function () {
+          console.log("events!");
+          console.log(params);
+        }
+      });
+      
+      router.match("#!/photo/:photo_id/events/:id", {
         as: "event",
         callback: function () {
           console.log("event!");
           console.log(params);
         }
       });
+      
+      router.match("#!/:controller", {
+        as: "controller",
+        callback: function () {
+          console.log("controller!");
+          console.log(params);
+        }
+      });
+      
       router.run();
     </script>
   </head>
@@ -42,6 +60,7 @@
       <li><a href="#!/">Root</a></li>
       <li><a href="#!/photo/22">Photo</a></li>
       <li><a href="#!/photo/22/events">Photo Events</a></li>
+      <li><a href="#!/photo/22/events/3">Photo Event</a></li>
       <li><a href="#!/photo/22?test=value">Photo with params</a></li>
     </ul>
   </body>

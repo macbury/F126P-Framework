@@ -8,7 +8,7 @@ Template = {
   
   render: function(view, locals, callback){
     if (Template.cache[view]) {
-      callback(Haml.render(Template.cache[view], locals));
+      callback(Haml.render(Template.cache[view], { locals: locals }));
     } else {
       $.ajax({
         type: "GET",
@@ -16,7 +16,7 @@ Template = {
         dataType: "html",
         success: function(html){
           Template.cache[view] = html;
-          callback(Haml.render(html, locals));
+          callback(Haml.render(html, {locals: locals}));
         },
         error: function(){
           delete Template.cache[view];

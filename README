@@ -1,0 +1,27 @@
+Router Example
+
+var router = new Router();
+
+Define root path:
+
+router.root(function () {
+  console.log("You are in root!");
+});
+
+Define custom path:
+
+router.match("#!/hello/:id", {
+  as: "hello",
+  callback: function () {
+    console.log("photo!");
+    console.log(params);
+  }
+});
+
+Now you can use this route as javascript function:
+
+hello_path({ id: 2 })
+#!/hello/2
+
+hello_path({ id: 2, other_param: "test" })
+#!/hello/2?other_param=test

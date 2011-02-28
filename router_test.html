@@ -5,6 +5,7 @@
     <title>router_test</title>
     <script type="text/javascript" charset="utf-8" src="jquery-1.5.1.js"></script>
     <script type="text/javascript" charset="utf-8" src="jquery.cookie.js"></script>
+    <script type="text/javascript" charset="utf-8" src="inflections.js"></script>
     <script type="text/javascript" charset="utf-8" src="haml.js"></script>
     <script type="text/javascript" charset="utf-8" src="template.js"></script>
     <script type="text/javascript" charset="utf-8" src="jake.js"></script>
@@ -52,6 +53,23 @@
       });
       
       router.run();
+      
+      var Photo = new Record(function(){
+        this.name("photo");
+        this.attr("title", String);
+        this.attr("id", Number);
+      });
+      
+      var Album = new Record(function(){
+        this.name("album");
+        this.attr("id", Number);
+        this.attr("name", String);
+        
+        this.has_many({
+          name: "photo",
+          key: "album_id"
+        });
+      });
     </script>
   </head>
   

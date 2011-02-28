@@ -1,64 +1,36 @@
+/**
+ * @author Arkadiusz Buras
+ */
+
 Record.ExistingRecord = 0;
 Record.NewRecord = 1;
 Record.UpdatedRecord = 2;
 Record.DeletedRecord = 3;
 
-function Record(new_attributes, relations, name) {
-  var self = this;
-  self._relations = relations || {};
-  self._attrs = [];
-  self._record_name = name;
-  self._error_count = 0;
-  self.dirty_changes = {};
-  var mixin = window[Record.sexyName(self._record_name + "_record")];
-  if (mixin != undefined) {
-    $.extend(this, mixin);
+function Record(setup_callback) {
+  this._attrs = [];
+  this._record_name = "Record";
+  this._dirty_changes = {};
+  this._relations = {};
+  this._type = Record.NewRecord;
+  
+  setup_callback.apply(this);
+  var record = this;
+  
+  return function(attributes) {
+    $.extend(this, record);
+    
+    this.ChangeTypeTo(Record.NewRecord);
+    this.attr("id", Number);
+    this.initialize(attributes);
   }
-  
-  $.each(new_attributes, function (key, value) {
-    self._attrs.push(key);
-    
-    self.build_setters(key, value);
-    
-    self[key] = value;
-    if (relations[key] != undefined) {
-      self[key] = self.BuildRelation(key,value);
-    }
-  });
-  
-  this._type = Record.ExistingRecord;
 }
 
-Record.prototype.build_setters = function (key, value) {
-  var methods = {};
-  var self = this;
-  methods["get"+Record.sexyName(key)] = function () {
-    return self[key];
-  }
-    
-  methods["set"+Record.sexyName(key)] = function (new_value) {
-    if (self[key] != new_value) {
-      self.ChangeTypeTo(Record.UpdatedRecord);
-      if (self.dirty_changes[key] == null) {
-        self.dirty_changes[key] = [];
-      }
-      self.dirty_changes[key].push(self[key]);
-      self.dirty_changes[key].push(new_value);
-      self[key] = new_value;
-    };
-    
-    return new_value;
-  }
-  
-  methods["have"+Record.sexyName(key)] = function () {
-    if (typeof(self[key]) == "object") {
-      return (self[key].length > 0);
-    } else {
-      return self[key] != null;
-    }
-  }
-  
-  $.extend(this, methods);
+
+Record.prototype.attr = function (name, type) {
+  this[name] = type();
+  this._attrs.push(name);
+  this.build_setters(name, type())
 }
 
 Record.sexyName = function(name) {
@@ -75,53 +47,6 @@ Record.sexyName = function(name) {
   return camelized;
 }
 
-Record.prototype.to_dom = function () {
-  return [this._record_name, this.id].join("_");
-}
-
-Record.prototype.Changes = function () {
-  return this.dirty_changes;
-}
-
-Record.prototype.RelationsRecords = function () {
-  var out = [];
-  var self = this;
-  
-  for( key in self._relations ) {
-    if (self[key] != null) {
-      for (var i=0; i < self[key].length; i++) {
-        var record = self[key][i];
-        out.push({ _relation_key: [key, record] });
-      }
-    }
-  }
-  
-  
-  return out;
-}
-
-Record.prototype.BuildRelation = function (relation_key, raw_records) {
-  var relation = this._relations[relation_key];
-  var self = this;
-  var records = [];
-  $.each(raw_records, function (key, atributes) {
-    var record = new Record(atributes, {}, self._record_name);
-    record._record_name = relation["name"];
-    record[self._record_name] = self;
-    records.push(record);
-  });
-  
-  self["new"+Record.sexyName(relation["name"])] = function (attributes) {
-    var record = new Record(attributes, {}, relation["name"]);
-    record._record_name = relation["name"];
-    record.ChangeTypeTo(RestDataSource.NewRecord);
-    record[self._record_name] = self;
-    records.push(record);
-  }
-  
-  return records;
-}
-
 Record.prototype.ChangeTypeTo = function (new_type) {
   if (new_type == Record.ExistingRecord) {
     this.dirty_changes = {};
@@ -133,35 +58,44 @@ Record.prototype.isRecordType = function (r_type) {
   return this._type == r_type;
 }
 
-Record.prototype.UpdateAttributes = function (attributes) {
-  var record = this;
-  var modified = false;
-  
-  $.each(attributes, function (key, value) {
-    if (record[key] != value) {
-      modified = true;
-    }
-    record.build_setters(key, value);
-    record[key] = value;
-  });
-  
-  if (modified) {
-    this._type = Record.UpdatedRecord;
+Record.prototype.build_setters = function (key, value) {
+  var methods = {};
+  var self = this;
+  methods["get"+Record.sexyName(key)] = function () {
+    return this[key];
   }
+    
+  methods["set"+Record.sexyName(key)] = function (new_value) {
+    if (this[key] != new_value) {
+      this.ChangeTypeTo(Record.UpdatedRecord);
+      if (this.dirty_changes[key] == null) {
+        this.dirty_changes[key] = [];
+      }
+      this.dirty_changes[key].push(this[key]);
+      this.dirty_changes[key].push(new_value);
+      this[key] = new_value;
+    };
+    
+    return new_value;
+  }
+  
+  methods["have"+Record.sexyName(key)] = function () {
+    if (typeof(self[key]) == "object") {
+      return (self[key].length > 0);
+    } else {
+      return self[key] != null;
+    }
+  }
+  
+  $.extend(this, methods);
 }
 
-Record.prototype.attributes = function () {
-  var out = {};
-  var self = this;
-  $.each(this._attrs, function (index, key) {
-    out[key] = self[key];
-  });
-  
-  return out;
+Record.prototype.name = function (name) {
+  this._record_name = name;
 }
 
 Record.prototype.to_param = function () {
-  return this._build_param_from_object(this.attributes(), this._record_name);
+  return this._build_param_from_object(this._attrs, this._record_name);
 }
 
 Record.prototype._build_param_from_object = function (attributes, prefix) {
@@ -185,4 +119,23 @@ Record.prototype._build_param_from_object = function (attributes, prefix) {
   }
   
   return param.join("&");
+}
+
+Record.prototype.initialize = function (args) {
+  for(key in args) {
+    this[key] = args[key];
+  }
+}
+
+Record.prototype.has_many = function (options) {
+  var options = $.extend({
+    key: "record_id",
+    name: "record",
+  }, options);
+  
+  var relation_name = options["name"].toLowerCase().pluralize();
+  
+  this[relation_name] = function (callback) {
+    callback([]);
+  }
 }

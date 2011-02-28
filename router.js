@@ -52,15 +52,21 @@ Router.prototype.match = function (path, options) {
     window[options['as']+"_path"] = function (p) {
       var url = self.prefix + path;
       var url_vals = url.match(self.PATH_NAME_MATCHER);
-      
       if (url_vals) {
         $.each(url_vals, function(){
           var var_name = this.replace(":", "");
           var value = p[var_name];
           url = url.replace(this, escape(value));
-          delete p[var_name];
+          
+          if (p) {
+            delete p[var_name];
+          }
         });
         
+      } 
+      
+     
+      if (p) {
         var ap = $.param(p);
         if (ap.length > 0) {
           url = [url, ap].join("?");

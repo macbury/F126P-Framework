@@ -75,6 +75,10 @@ Record.sexyName = function(name) {
   return camelized;
 }
 
+Record.prototype.to_dom = function () {
+  return [this._record_name, this.id].join("_");
+}
+
 Record.prototype.Changes = function () {
   return this.dirty_changes;
 }

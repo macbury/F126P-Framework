@@ -17,15 +17,46 @@ function Record(setup_callback) {
   setup_callback.apply(this);
   var record = this;
   
-  return function(attributes) {
+  var new_record = function(attributes) {
     $.extend(this, record);
     
     this.ChangeTypeTo(Record.NewRecord);
     this.attr("id", Number);
     this.initialize(attributes);
   }
+  
+  $.extend(new_record, {
+    all: function(options){
+      var options = $.extend({
+        url: "/record",
+        data: { format: "JS" },
+        callback: function (records) {}
+      }, options);
+      
+      $.ajax({
+        url: options["url"],
+        dataType: "JSON",
+        data: options["data"],
+        success: function(data){
+          var records = [];
+          for (var i=0; i < data.length; i++) {
+            var raw_record = data[i];
+            var r = new new_record(raw_record);
+            records.push(r);
+          };
+          
+          options["callback"](records);
+        },
+        
+        error: function(){
+          options["callback"]([]);
+        },
+      })
+    },
+  });
+  
+  return new_record;
 }
-
 
 Record.prototype.attr = function (name, type) {
   this[name] = type();
@@ -122,6 +153,9 @@ Record.prototype._build_param_from_object = function (attributes, prefix) {
 }
 
 Record.prototype.initialize = function (args) {
+  if (args[this._record_name]) {
+    args = args[this._record_name];
+  }
   for(key in args) {
     this[key] = args[key];
   }

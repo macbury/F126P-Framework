@@ -8,6 +8,7 @@
     <script type="text/javascript" charset="utf-8" src="haml.js"></script>
     <script type="text/javascript" charset="utf-8" src="template.js"></script>
     <script type="text/javascript" charset="utf-8" src="jake.js"></script>
+    <script type="text/javascript" charset="utf-8" src="record.js"></script>
     <script type="text/javascript" charset="utf-8" src="router.js"></script>
     
     <script type="text/javascript" charset="utf-8">
@@ -16,7 +17,7 @@
       
       router.root(function () {
         console.log("root!");
-        render("test.haml", { msg: "hello world" }, function (content) {
+        Template.render("test.haml", { msg: "hello world" }, function (content) {
           $('body').append(content);
         })
       });
@@ -26,6 +27,11 @@
         callback: function () {
           console.log("photo!");
           console.log(params);
+          
+          Template.partial("hello.haml", function() {
+            $('body').append(this.render({ msg: "Hello World" }));
+            $('body').append(this.render({ msg: "Witaj świecie" }));
+          });
         }
       });
       

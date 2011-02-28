@@ -6,9 +6,9 @@ Template = {
   cache: {},
   views_path: "/views",
   
-  render: function(view, locals, callback){
+  load: function(view, onLoadCallback){
     if (Template.cache[view]) {
-      callback(Haml.render(Template.cache[view], { locals: locals }));
+      onLoadCallback(Template.cache[view]);
     } else {
       $.ajax({
         type: "GET",
@@ -16,17 +16,29 @@ Template = {
         dataType: "html",
         success: function(html){
           Template.cache[view] = html;
-          callback(Haml.render(html, {locals: locals}));
+          onLoadCallback(Template.cache[view]);
         },
         error: function(){
           delete Template.cache[view];
-          callback("Could not load "+ [Template.views_path, view].join("/"));
+          onLoadCallback("Could not load file: "+ [Template.views_path, view].join("/"));
         },
       });
     }
   },
+  
+  render: function(view, locals, callback){
+    Template.load(view, function (view_content) {
+      callback(Haml.render(view_content, { locals: locals }));
+    });
+  },
+  
+  partial: function (view, callback) {
+    Template.load(view, function(content) {
+      callback.apply({
+        render: function(locals){
+          return Haml.render(content, { locals: locals });
+        },
+      }, arguments)
+    });
+  }
 };
-
-function render(view, locals, callback) {
-  Template.render(view, locals, callback);
-}
